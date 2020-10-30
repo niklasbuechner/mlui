@@ -1,0 +1,52 @@
+{
+    "name": "mlui",
+    "version": "1.0.0",
+    "main": "app.js",
+    "author": "Niklas Buechner",
+    "license": "MIT",
+    "dependencies": {
+        "electron-squirrel-startup": "^1.0.0"
+    },
+    "scripts": {
+        "make": "electron-forge make",
+        "package": "electron-forge package",
+        "start": "electron-forge start"
+    },
+    "devDependencies": {
+        "@electron-forge/cli": "^6.0.0-beta.54",
+        "@electron-forge/maker-deb": "^6.0.0-beta.54",
+        "@electron-forge/maker-rpm": "^6.0.0-beta.54",
+        "@electron-forge/maker-squirrel": "^6.0.0-beta.54",
+        "@electron-forge/maker-zip": "^6.0.0-beta.54",
+        "electron": "^10.1.5"
+    },
+    "config": {
+        "forge": {
+            "packagerConfig": {},
+            "makers": [{
+                "name": "@electron-forge/maker-squirrel",
+                "config": {
+                    "name": "mlui"
+                }
+            }, {
+                "name": "@electron-forge/maker-zip",
+                "platforms": [
+                    "darwin",
+                    "linux",
+                    "windows"
+                ]
+            }, {
+                "name": "@electron-forge/maker-deb",
+                "config": {
+                    "options": {
+                        "maintainer": "Niklas Buechner",
+                        "homepage": "www.niklasbuechner.com"
+                    }
+                }
+            }, {
+                "name": "@electron-forge/maker-rpm",
+                "config": {}
+            }]
+        }
+    }
+}
