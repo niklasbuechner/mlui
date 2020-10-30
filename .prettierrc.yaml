@@ -1,0 +1,12 @@
+# .prettierrc or .prettierrc.yaml
+arrowParens: always
+bracketSpacing: true
+endOfLine: lf
+jsxBracketSameLine: false
+jsxSingleQuote: true
+quoteProps: as-needed
+semi: true
+singleQuote: true
+tabWidth: 4
+trailingComma: all
+useTabs: false
