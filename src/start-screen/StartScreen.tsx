@@ -1,9 +1,12 @@
 import * as React from 'react';
 import {
     AppBar,
+    Button,
     Container,
     CssBaseline,
+    Grid,
     IconButton,
+    Paper,
     Toolbar,
     Typography,
 } from '@material-ui/core';
@@ -12,17 +15,19 @@ import MenuIcon from '@material-ui/icons/Menu';
 
 const useStyles = makeStyles((theme) => ({
     container: {
-        marginTop: 16,
+        marginTop: 16 * 4,
         margin: 'auto',
-    },
-    root: {
-        flexGrow: 1,
     },
     menuButton: {
         marginRight: theme.spacing(2),
     },
     title: {
-        flexGrow: 1,
+        fontSize: 72,
+    },
+    paper: {
+        padding: theme.spacing(2),
+        textAlign: 'center',
+        color: theme.palette.text.secondary,
     },
 }));
 
@@ -48,7 +53,14 @@ function App() {
             </AppBar>
             <CssBaseline />
             <Container maxWidth='lg' className={classes.container}>
-                <h1>Hello World</h1>
+                <h1>Available Screens</h1>
+                <Grid container spacing={1}>
+                    <Grid item xs={4}>
+                        <Button>
+                            <Paper className={classes.paper}>Box visualisation</Paper>
+                        </Button>
+                    </Grid>
+                </Grid>
             </Container>
         </>
     );
