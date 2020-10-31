@@ -1,7 +1,24 @@
-const { app, BrowserWindow, screen: screenObject } = require('electron');
+import {
+    app,
+    BrowserWindow,
+    dialog,
+    ipcMain,
+    screen as screenObject,
+} from 'electron';
+
+ipcMain.on('open-directory', async (event, args: { inputId: string }) => {
+    const directory = await dialog.showOpenDialog({
+        properties: ['openDirectory'],
+    });
+
+    event.reply('directory-opened', {
+        ...directory,
+        ...args,
+    });
+});
 
 function createWindow() {
-    const { width, height } = screenObject.getPrimaryDisplay().workAreaSize
+    const { width, height } = screenObject.getPrimaryDisplay().workAreaSize;
 
     const win = new BrowserWindow({
         width,
