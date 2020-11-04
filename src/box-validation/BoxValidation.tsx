@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 import {
     Button,
     Checkbox,
@@ -12,79 +12,76 @@ import {
     Input,
     InputLabel,
 } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
+import { styled } from '@material-ui/core/styles';
 import { ipcRenderer } from 'electron';
 
-const useStyles = makeStyles((theme) => ({
-    container: {
-        marginTop: theme.spacing(8),
-        margin: 'auto',
-    },
-    dialog: {
-        padding: theme.spacing(16),
-    },
-    dialogTitle: {
-        width: 400,
-    },
-    title: {
-        fontSize: 72,
-    },
-}));
 
-function BoxValidation() {
-    const classes = useStyles();
-    const [showFolderSelection, setFolderSelectionVisibility] = React.useState(
-        true,
-    );
-    const [
-        showAnnotationDirectoryInput,
-        setAnnotationDirectoryInputVisibility,
-    ] = React.useState(true);
+const BoxValidationContainer = styled(Container)({
+    marginTop: 8 * 8,
+    margin: 'auto',
+});
+const BoxValidationDialog = styled(Dialog)({
+    padding: 8*16,
+});
+const BoxValidationDialogContentText = styled(DialogContentText)({
+    width: 400,
+})
 
-    const imageDirectoryId = 'images-directory';
-    const annotationDirectoryId = 'annotation-directory';
-    const [imageDirectory, setImageDirectory] = React.useState('');
-    const [annotationDirectory, setAnnotationDirectory] = React.useState('');
-    const annocationDirectoryLabel = React.useMemo(() => {
-        if (
-            annotationDirectory !== '' ||
-            showAnnotationDirectoryInput === true
-        ) {
-            return annotationDirectory;
-        } else {
-            return imageDirectory;
-        }
-    }, [imageDirectory, annotationDirectory]);
+type BoxValidationState = {
+    showFolderSelectionDialog: boolean,
+    showAnnotationDirectoryInput: boolean,
+    preventDialogOpen: boolean,
+    imageDirectory: string,
+    annotationDirectory: string,
+    annocationDirectoryLabel: string,
+};
 
-    let preventDialogOpen = false;
-    const openDirectory = (inputId: string) => {
-        if (!preventDialogOpen) {
+class BoxValidation extends Component<{}, BoxValidationState>
+{
+    private imageDirectoryId = 'images-directory';
+    private annotationDirectoryId = 'annotation-directory';
+
+    public constructor(props: any) {
+        super(props);
+
+        this.state = {
+            showFolderSelectionDialog: true,
+            showAnnotationDirectoryInput: false,
+            preventDialogOpen: false,
+            imageDirectory: '',
+            annotationDirectory: '',
+            annocationDirectoryLabel: '',
+        };
+
+        ipcRenderer.on(
+            'directory-opened',
+            (
+                _event,
+                { filePaths, inputId }: { filePaths: string[]; inputId: string },
+            ) => {
+                if (filePaths.length > 0) {
+                    if (inputId === this.imageDirectoryId) {
+                        this.setState({ imageDirectory: filePaths[0] });
+                    } else {
+                        this.setState({ annotationDirectory: filePaths[0] });
+                    }
+                }
+
+                document.getElementById(inputId)?.blur();
+                this.setState({ preventDialogOpen: false });
+            },
+        );
+    }
+
+    openDirectory(inputId: string) {
+        if (!this.state.preventDialogOpen) {
             ipcRenderer.send('open-directory', { inputId });
-            preventDialogOpen = true;
+            this.setState({ preventDialogOpen: true });
         }
     };
 
-    ipcRenderer.on(
-        'directory-opened',
-        (
-            _event,
-            { filePaths, inputId }: { filePaths: string[]; inputId: string },
-        ) => {
-            if (filePaths.length > 0) {
-                if (inputId === imageDirectoryId) {
-                    setImageDirectory(filePaths[0]);
-                } else {
-                    setAnnotationDirectory(filePaths[0]);
-                }
-            }
-
-            document.getElementById(inputId)?.blur();
-            preventDialogOpen = false;
-        },
-    );
-
-    const toggleAnnotationDirectory = (_event: any, checked: boolean) => {
-        setAnnotationDirectoryInputVisibility(checked);
+    toggleAnnotationDirectory(_event: any, checked: boolean) {
+        this.setState({ showAnnotationDirectoryInput: checked });
 
         let visibility = 'visible';
         if (!checked) {
@@ -94,65 +91,68 @@ function BoxValidation() {
         document.getElementById(
             'annotation-directory-container',
         )!.style.visibility = visibility;
-    };
+    }
 
-    return (
-        <Container maxWidth='lg' className={classes.container}>
-            <h1>Box Validation</h1>
-            Image directory: {imageDirectory}
-            <br />
-            Annotation directory: {annocationDirectoryLabel}
-            <Dialog
-                open={showFolderSelection}
-                onClose={() => setFolderSelectionVisibility(false)}
-                maxWidth='lg'
-                className={classes.dialog}
-            >
-                <DialogTitle id='form-dialog-title'>Select folder</DialogTitle>
-                <DialogContent>
-                    <DialogContentText className={classes.dialogTitle}>
-                        Please select the folder with your images.
-                    </DialogContentText>
-                    <FormControl fullWidth>
-                        <InputLabel htmlFor={imageDirectoryId}>
-                            Image directory
-                        </InputLabel>
-                        <Input
-                            id={imageDirectoryId}
-                            onFocus={() => openDirectory(imageDirectoryId)}
-                            value={imageDirectory}
-                        />
-                    </FormControl>
+    render() {
+        return (
+            <BoxValidationContainer maxWidth='lg'>
+                <div onClick={() => this.setState({ showFolderSelectionDialog: true })}>
+                    <h1>Box Validation</h1>
+                    Image directory: {this.state.imageDirectory}
                     <br />
-                    <FormControlLabel
-                        control={
-                            <Checkbox onChange={toggleAnnotationDirectory} />
-                        }
-                        label='Use different annotations folder'
-                    />
-
-                    <FormControl
-                        id='annotation-directory-container'
-                        fullWidth
-                        style={{ visibility: 'hidden' }}
-                    >
-                        <InputLabel htmlFor={annotationDirectoryId}>
-                            Annotation directory
-                        </InputLabel>
-                        <Input
-                            id={annotationDirectoryId}
-                            onFocus={() => openDirectory(annotationDirectoryId)}
-                            value={annotationDirectory}
+                    Annotation directory: {this.state.annocationDirectoryLabel}
+                </div>
+                <BoxValidationDialog
+                    open={this.state.showFolderSelectionDialog}
+                    onClose={() => this.setState({ showFolderSelectionDialog: false })}
+                    maxWidth='lg'
+                >
+                    <DialogTitle id='form-dialog-title'>Select folder</DialogTitle>
+                    <DialogContent>
+                        <BoxValidationDialogContentText>
+                            Please select the folder with your images.
+                        </BoxValidationDialogContentText>
+                        <FormControl fullWidth>
+                            <InputLabel htmlFor={this.imageDirectoryId}>
+                                Image directory
+                            </InputLabel>
+                            <Input
+                                id={this.imageDirectoryId}
+                                onFocus={() => this.openDirectory(this.imageDirectoryId)}
+                                value={this.state.imageDirectory}
+                            />
+                        </FormControl>
+                        <br />
+                        <FormControlLabel
+                            control={
+                                <Checkbox onChange={this.toggleAnnotationDirectory.bind(this)} />
+                            }
+                            label='Use different annotations folder'
                         />
-                    </FormControl>
 
-                    <Button onClick={() => setFolderSelectionVisibility(false)}>
-                        Accept
-                    </Button>
-                </DialogContent>
-            </Dialog>
-        </Container>
-    );
+                        <FormControl
+                            id='annotation-directory-container'
+                            fullWidth
+                            style={{ visibility: 'hidden' }}
+                        >
+                            <InputLabel htmlFor={this.annotationDirectoryId}>
+                                Annotation directory
+                            </InputLabel>
+                            <Input
+                                id={this.annotationDirectoryId}
+                                onFocus={() => this.openDirectory(this.annotationDirectoryId)}
+                                value={this.state.annotationDirectory}
+                            />
+                        </FormControl>
+
+                        <Button onClick={() => this.setState({ showFolderSelectionDialog: false })}>
+                            Accept
+                        </Button>
+                    </DialogContent>
+                </BoxValidationDialog>
+            </BoxValidationContainer>
+        );
+    }
 }
 
 export default BoxValidation;

@@ -7,32 +7,29 @@ import {
     Toolbar,
     Typography,
 } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
+import { styled } from '@material-ui/core/styles';
 import MenuIcon from '@material-ui/icons/Menu';
 import StartScreen from '../start-screen/StartScreen';
 import BoxValidation from '../box-validation/BoxValidation';
 
-const useStyles = makeStyles((theme) => ({
+const AppMenuButton = styled(IconButton)({
     menuButton: {
-        marginRight: theme.spacing(2),
+        marginRight: 8 * 2,
     },
-}));
+});
 
 function App() {
-    const classes = useStyles();
-
     return (
         <>
             <AppBar position='static'>
                 <Toolbar variant='dense'>
-                    <IconButton
+                    <AppMenuButton
                         edge='start'
-                        className={classes.menuButton}
                         color='inherit'
                         aria-label='menu'
                     >
                         <MenuIcon />
-                    </IconButton>
+                    </AppMenuButton>
                     <Typography variant='h6' color='inherit'>
                         Overview
                     </Typography>
